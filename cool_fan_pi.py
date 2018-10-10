@@ -19,6 +19,8 @@ NPN = True  # 控制风扇用的是NPN三极管
 IS_LOG_FILE = True  # 是否输出温度信息到文件
 IS_LOG_CONSOLE = True  # 是否输出温度信息到控制台
 
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+log_file_path = os.path.join(base_dir, 'temperature_log')
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(fan_pin, GPIO.OUT)
@@ -78,7 +80,7 @@ def main():
         if IS_LOG_FILE:
             try:
                 if count <= 12 * 60 * 12:
-                    fp = open('temperature_log', 'a')
+                    fp = open(log_file_path, 'a')
                     if temp_diff is None:
                         fp.write('{} CPU temp: {}C\n'.format(datetime.now(), gpu_temp_loop))
                     else:
@@ -87,7 +89,7 @@ def main():
                     count += 1
                     fp.close()
                 else:
-                    fp = open('temperature_log', 'w')
+                    fp = open(log_file_path, 'w')
                     fp.write('{} CPU temp: {}C\n'.format(datetime.now(), gpu_temp_loop))
                     count = 0
                     fp.close()
