@@ -18,6 +18,8 @@ fan_pin = 12  # 风扇IO针脚BOARD编号
 NPN = True  # 控制风扇用的是NPN三极管
 IS_LOG_FILE = True  # 是否输出温度信息到文件
 IS_LOG_CONSOLE = True  # 是否输出温度信息到控制台
+time_interval = 5  # 检测温度间隔时间单位秒
+log_file_duration = 12  # 日志记录保留时间长度，单位小时
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 log_file_path = os.path.join(base_dir, 'temperature_log')
@@ -71,6 +73,7 @@ def main():
     count = 0
     env_temp = None
     temp_diff = None
+    count_per_min = 60/time_interval
     while True:
         gpu_temp_loop = get_gpu_temp()
         if temp_path is not None:
@@ -79,29 +82,29 @@ def main():
 
         if IS_LOG_FILE:
             try:
-                if count <= 12 * 60 * 12:
+                if count <= count_per_min * 60 * log_file_duration:
                     fp = open(log_file_path, 'a')
                     if temp_diff is None:
-                        fp.write('{} CPU temp: {}C\n'.format(datetime.now(), gpu_temp_loop))
+                        fp.write('{} CPU temp: {}C\n'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), gpu_temp_loop))
                     else:
-                        fp.write('{} CPUtemp: {}C, ENVtemp: {}C, DIFF: {}C\n'.format(datetime.now(), gpu_temp_loop,
-                                                                                     env_temp, temp_diff))
+                        fp.write('{} CPUtemp: {}C, ENVtemp: {}C, DIFF: {}C\n'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                                                     gpu_temp_loop, env_temp, temp_diff))
                     count += 1
                     fp.close()
                 else:
                     fp = open(log_file_path, 'w')
-                    fp.write('{} CPU temp: {}C\n'.format(datetime.now(), gpu_temp_loop))
+                    fp.write('{} CPU temp: {}C\n'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), gpu_temp_loop))
                     count = 0
                     fp.close()
             except Exception as e:
-                print('Error: {}-{}'.format(datetime.now(), e))
+                print('Error: {}-{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), e))
 
         if IS_LOG_CONSOLE:
             if temp_diff is None:
-                print('{} CPU temp: {}C\n'.format(datetime.now(), gpu_temp_loop))
+                print('{} CPU temp: {}C\n'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), gpu_temp_loop))
             else:
-                print('{} CPUtemp: {}C, ENVtemp: {}C, DIFF: {}C\n'.format(datetime.now(), gpu_temp_loop,
-                                                                          env_temp, temp_diff))
+                print('{} CPUtemp: {}C, ENVtemp: {}C, DIFF: {}C\n'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                                          gpu_temp_loop, env_temp, temp_diff))
         if temp_diff is None:
             if gpu_temp_loop > T_HIGH:
                 GPIO.output(fan_pin, START)
