@@ -115,7 +115,7 @@ def main():
                 GPIO.output(fan_pin, START)
             elif temp_diff < T_DIFF_LOW:
                 GPIO.output(fan_pin, STOP)
-        time.sleep(5)
+        time.sleep(time_interval)
 
 
 if __name__ == '__main__':
