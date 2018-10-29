@@ -40,8 +40,8 @@ try:
     for each_dir in os.listdir('/sys/bus/w1/devices/'):
         if '28-' in each_dir:
             temp_path = '/sys/bus/w1/devices/'+each_dir+'/w1_slave'
-except FileNotFoundError:
-    print('Warning!: 没有检测到温度传感器！')
+except Exception as e:
+    print('Warning!: 没有检测到温度传感器！Error: {}'.format(e))
 
 
 def get_gpu_temp():
